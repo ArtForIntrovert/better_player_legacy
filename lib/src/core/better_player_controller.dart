@@ -797,19 +797,15 @@ class BetterPlayerController {
       _loadAsmsSubtitlesSegments(currentVideoPlayerValue.position);
     }
 
-    final int now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastPositionSelection > 500) {
-      _lastPositionSelection = now;
-      _postEvent(
-        BetterPlayerEvent(
-          BetterPlayerEventType.progress,
-          parameters: <String, dynamic>{
-            _progressParameter: currentVideoPlayerValue.position,
-            _durationParameter: currentVideoPlayerValue.duration
-          },
-        ),
-      );
-    }
+    _postEvent(
+      BetterPlayerEvent(
+        BetterPlayerEventType.progress,
+        parameters: <String, dynamic>{
+          _progressParameter: currentVideoPlayerValue.position,
+          _durationParameter: currentVideoPlayerValue.duration
+        },
+      ),
+    );
   }
 
   ///Add event listener which listens to player events.
