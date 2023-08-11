@@ -10,6 +10,11 @@ import 'package:better_player/src/video_player/video_player_platform_interface.d
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+
+void log(String message) => print(
+    '${DateFormat.jms().format(DateTime.now()) + ':${DateTime.now().millisecond}'}'
+    '[BetterPlayer]: $message');
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
 // This will clear all open videos on the platform when a full restart is
@@ -226,7 +231,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           break;
         case VideoEventType.completed:
           value = value.copyWith(isPlaying: false, position: value.duration);
-          _timer?.cancel();
+          _stopTimer();
           break;
         case VideoEventType.bufferingUpdate:
           value = value.copyWith(buffered: event.buffered);
@@ -275,7 +280,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       } else {
         value.copyWith(errorDescription: object.toString());
       }
-      _timer?.cancel();
+      _stopTimer();
       if (!_initializingCompleter.isCompleted) {
         _initializingCompleter.completeError(object);
       }
@@ -427,7 +432,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!_isDisposed) {
       _isDisposed = true;
       value = VideoPlayerValue.uninitialized();
-      _timer?.cancel();
+      _stopTimer();
       await _eventSubscription?.cancel();
       await _videoPlayerPlatform.dispose(_textureId);
       videoEventStreamController.close();
@@ -470,11 +475,20 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.setLooping(_textureId, value.isLooping);
   }
 
-  void _restartTimer() {
+  void _stopTimer() {
+    if (!(_timer?.isActive ?? false)) return;
+
     _timer?.cancel();
+
+    log('timer stopped');
+  }
+
+  void _restartTimer() {
+    _stopTimer();
 
     if (!value.isPlaying) return;
 
+    log('timer started');
     _timer = Timer.periodic(
       const Duration(milliseconds: 300),
       (Timer timer) async {
@@ -551,7 +565,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// If [moment] is outside of the video's full range it will be automatically
   /// and silently clamped.
   Future<void> seekTo(Duration? position) async {
-    _timer?.cancel();
+    _stopTimer();
     bool isPlaying = value.isPlaying;
     final int positionInMs = value.position.inMilliseconds;
     final int durationInMs = value.duration?.inMilliseconds ?? 0;
