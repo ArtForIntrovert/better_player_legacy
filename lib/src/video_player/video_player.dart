@@ -488,32 +488,37 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     if (!value.isPlaying) return;
 
-    log('timer started');
+    void routine(Timer timer) async {
+      if (_isDisposed) return;
+
+      final positions = await Future.wait<Object?>(
+        [position, absolutePosition],
+      );
+
+      if (_isDisposed) return;
+
+      final Duration? newPosition = positions[0] as Duration?;
+      final DateTime? newAbsolutePosition = positions[1] as DateTime?;
+
+      if (_seekPosition != null && newPosition != null) {
+        final difference =
+            newPosition.inMilliseconds - _seekPosition!.inMilliseconds;
+        if (difference.abs() > 0) {
+          _seekPosition = null;
+        }
+      }
+
+      _updatePosition(newPosition, absolutePosition: newAbsolutePosition);
+    }
+
     _timer = Timer.periodic(
       const Duration(milliseconds: 300),
-      (Timer timer) async {
-        if (_isDisposed) return;
-
-        final positions = await Future.wait<Object?>(
-          [position, absolutePosition],
-        );
-
-        if (_isDisposed) return;
-
-        final Duration? newPosition = positions[0] as Duration?;
-        final DateTime? newAbsolutePosition = positions[1] as DateTime?;
-
-        if (_seekPosition != null && newPosition != null) {
-          final difference =
-              newPosition.inMilliseconds - _seekPosition!.inMilliseconds;
-          if (difference.abs() > 0) {
-            _seekPosition = null;
-          }
-        }
-
-        _updatePosition(newPosition, absolutePosition: newAbsolutePosition);
-      },
+      routine,
     );
+
+    routine(_timer!);
+
+    log('timer started');
   }
 
   Future<void> _applyPlayPause() async {
