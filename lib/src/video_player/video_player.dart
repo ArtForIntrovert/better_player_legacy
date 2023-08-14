@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 void log(String message) => print(
-      '${DateFormat.jms().format(DateTime.now()) + ':${DateTime.now().millisecond}'}'
+      '${DateFormat.jms().format(DateTime.now()) + ':${DateTime.now().millisecond}'} '
       '[BetterPlayer]: $message',
     );
 
@@ -516,8 +516,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     );
 
     routine(_timer!);
-
-    log('timer started');
   }
 
   Future<void> _applyPlayPause() async {
@@ -589,11 +587,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
     _seekPosition = positionToSeek;
 
-    log('seek started');
     _updatePosition(position);
     await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
+
     _updatePosition(position);
-    log('seek completed');
     _restartTimer();
   }
 
