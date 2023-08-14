@@ -590,9 +590,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _seekPosition = positionToSeek;
 
     log('seek started');
-    await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
-    log('seek completed');
     _updatePosition(position);
+    await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
+    _updatePosition(position);
+    log('seek completed');
     _restartTimer();
   }
 
