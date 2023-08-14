@@ -13,8 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 void log(String message) => print(
-    '${DateFormat.jms().format(DateTime.now()) + ':${DateTime.now().millisecond}'}'
-    '[BetterPlayer]: $message');
+      '${DateFormat.jms().format(DateTime.now()) + ':${DateTime.now().millisecond}'}'
+      '[BetterPlayer]: $message',
+    );
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
 // This will clear all open videos on the platform when a full restart is
@@ -479,8 +480,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!(_timer?.isActive ?? false)) return;
 
     _timer?.cancel();
-
-    log('timer stopped');
   }
 
   void _restartTimer() {
@@ -590,7 +589,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
     _seekPosition = positionToSeek;
 
+    log('seek started');
     await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
+    log('seek completed');
     _updatePosition(position);
     _restartTimer();
   }
