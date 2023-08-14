@@ -21,6 +21,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.OnPictureInPictureModeChangedProvider
+import androidx.core.app.PictureInPictureModeChangedInfo
 import androidx.lifecycle.lifecycleScope
 import com.jhomlala.better_player.BetterPlayerCache.releaseCache
 import io.flutter.embedding.engine.loader.FlutterLoader
@@ -104,23 +105,9 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
         activityBinding = binding
         activity = binding.activity
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val provider = activity as? OnPictureInPictureModeChangedProvider
-            provider?.addOnPictureInPictureModeChangedListener { info ->
-                if (USE_AUTO_PIP_MODE && currentPIPPlayer == null && info.isInPictureInPictureMode && pipPrimary != null) {
-                    currentPIPPlayer = pipPrimary
-                } else if (!USE_AUTO_PIP_MODE || currentPIPPlayer == null)
-                    return@addOnPictureInPictureModeChangedListener
-
-                currentPIPPlayer
-                    ?.onPictureInPictureStatusChanged(info.isInPictureInPictureMode)
-
-                if (!info.isInPictureInPictureMode) {
-                    currentPIPPlayer = null
-                }
-
-                Log.v(TAG, "PIP Mode changed: ${info.isInPictureInPictureMode}")
-            }
+            provider?.addOnPictureInPictureModeChangedListener(::onPictureInPictureModeChangedListener)
         }
 
         activity?.registerReceiver(pipActionsReceiver, PIPActionsReceiver.INTENT_FILTER)
@@ -131,6 +118,9 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {}
 
     override fun onDetachedFromActivity() {
+        val provider = activity as? OnPictureInPictureModeChangedProvider
+        provider?.removeOnPictureInPictureModeChangedListener(::onPictureInPictureModeChangedListener)
+
         activityBinding?.removeOnUserLeaveHintListener(userLeaveHintListener)
         activity?.unregisterReceiver(pipActionsReceiver)
     }
@@ -143,6 +133,22 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             ?.let { enablePictureInPicture(it) }
     }
 
+    private fun onPictureInPictureModeChangedListener(info: PictureInPictureModeChangedInfo) {
+        if (USE_AUTO_PIP_MODE && currentPIPPlayer == null && info.isInPictureInPictureMode && pipPrimary != null) {
+            currentPIPPlayer = pipPrimary
+        } else if (!USE_AUTO_PIP_MODE || currentPIPPlayer == null) {
+            return
+        }
+
+        currentPIPPlayer
+            ?.onPictureInPictureStatusChanged(info.isInPictureInPictureMode)
+
+        if (!info.isInPictureInPictureMode) {
+            currentPIPPlayer = null
+        }
+
+        Log.v(TAG, "PIP Mode changed: ${info.isInPictureInPictureMode}")
+    }
 
     internal fun getPlayer(textureId: Long): BetterPlayer? {
         return videoPlayers[textureId]
