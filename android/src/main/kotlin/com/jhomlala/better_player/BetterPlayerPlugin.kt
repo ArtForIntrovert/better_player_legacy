@@ -134,9 +134,9 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private fun onUserLeave() {
         if (USE_AUTO_PIP_MODE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return
-        if (videoPlayers.size().let { it > 1 || it == 0 }) return
+        if (pipPrimary == null) return
 
-        getFirstExistingPlayer { it.isPlaying.value }
+        pipPrimary
             ?.let { enablePictureInPicture(it) }
     }
 
