@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) CGAffineTransform preferredTransform;
 @property(nonatomic, readonly) bool disposed;
 @property(nonatomic, readonly) bool isPlaying;
-@property(nonatomic, nullable) CGRect* frame;
+@property(nonatomic) CGRect frame;
 @property(nonatomic) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
 @property(nonatomic, readonly) NSString* key;

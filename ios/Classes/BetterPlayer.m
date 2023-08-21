@@ -25,6 +25,7 @@ BetterPlayer *_pipPrimaryPlayer;
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super init];
     NSAssert(self, @"super init cannot be nil");
+    _frame = CGRectNull;
     _isInitialized = false;
     _isPlaying = false;
     _disposed = false;
@@ -756,13 +757,13 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (void)setPictureInPictureOverlayRect:(CGRect)frame {
-    self.frame = &(frame);
+    self.frame = frame;
     
     if (_pipPrimaryPlayer != self) return;
     
     AVPlayerLayer* layer = [self usePlayerLayer];
-    if (_player && !_pipController.isPictureInPictureActive && layer != NULL && self.frame != nil && !CGRectIsEmpty(*(self.frame))) {
-        layer.frame = *(self.frame);
+    if (_player && !_pipController.isPictureInPictureActive && layer != NULL && !CGRectIsEmpty(self.frame)) {
+        layer.frame = self.frame;
     }
 }
 
@@ -799,9 +800,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         }
         
         [self setupPipController];
-        
-        if (self.frame != nil && !CGRectIsEmpty(*(self.frame))) {
-            [self setPictureInPictureOverlayRect:*(self.frame)];
+                
+        if (!CGRectIsEmpty(self.frame)) {
+            [self setPictureInPictureOverlayRect:self.frame];
         }
         
         return self._playerLayer;
