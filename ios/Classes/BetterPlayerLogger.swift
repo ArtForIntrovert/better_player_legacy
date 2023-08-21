@@ -11,14 +11,22 @@ import Foundation
     @objc public static var isEnabled = true
     
     @objc public static func log(_ message: String) {
-        if (!isEnabled) { return }
-        
-        NSLog("[BetterPlayer]: " + message);
+        log(message, method: "", force: false)
     }
     
     @objc public static func log(_ message: String, force forceLog: Bool = false) {
+        log(message, method: "", force: forceLog)
+    }
+    
+    @objc public static func log(_ message: String, method: String = "") {
+        log(message, method: method, force: false)
+    }
+    
+    @objc public static func log(_ message: String, method: String = "", force forceLog: Bool = false) {
         if (!isEnabled && !forceLog) { return }
         
-        NSLog("[BetterPlayer]: " + message);
+        let method = method.isEmpty ? "" : ("." + method)
+        
+        NSLog("[BetterPlayer" + method + "]: " + message);
     }
 }
