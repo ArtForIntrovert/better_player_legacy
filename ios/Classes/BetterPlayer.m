@@ -718,14 +718,17 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         _pipPrimaryPlayer = self;
         [self usePlayerLayer];
         
-        [BetterPlayerLogger log:@"setPIPPrimary: true - PIP controller created"];
+        [BetterPlayerLogger log:@"PIP controller created" method:@"setPIPPrimary(true)"];
         return true;
     } else if (!isPrimary && _pipPrimaryPlayer == self) {
-        [BetterPlayerLogger log:@"setPIPPrimary: false - PIP controller disposed"];
+        [BetterPlayerLogger log:@"PIP controller disposed" method:@"setPIPPrimary(false)"];
         __playerLayer = NULL;
         _pipController = NULL;
         _pipPrimaryPlayer = NULL;
         
+        _exitingPictureInPicture = false;
+        _restoreInterface = false;
+
         return true;
     }
     
@@ -878,14 +881,14 @@ bool _restoreInterface = false;
 }
 
 - (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController  API_AVAILABLE(ios(9.0)){
-    [BetterPlayerLogger log:[NSString stringWithFormat:@"[BetterPlayer]: Pre PIP Stop – player.rate = %f, _isPlaying = %o",
+    [BetterPlayerLogger log:[NSString stringWithFormat:@"PIP Will Stop – player.rate = %f, _isPlaying = %o",
                              _player.rate, _isPlaying]];
     _exitingPictureInPicture = true;
     [self disablePictureInPicture];
 }
 
 - (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController  API_AVAILABLE(ios(9.0)){
-    [BetterPlayerLogger log:[NSString stringWithFormat:@"Post PIP Stop – player.rate = %f, _isPlaying = %o", _player.rate, _isPlaying]];
+    [BetterPlayerLogger log:[NSString stringWithFormat:@"PIP Did Stop – player.rate = %f, _isPlaying = %o", _player.rate, _isPlaying]];
     _exitingPictureInPicture = false;
     _restoreInterface = false;
 }
