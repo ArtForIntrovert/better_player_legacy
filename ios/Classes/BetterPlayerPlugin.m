@@ -85,7 +85,7 @@ bool _remoteCommandsInitialized = false;
                                          eventChannelWithName:[NSString stringWithFormat:@"better_player_channel/videoEvents%lld",
                                                                textureId]
                                          binaryMessenger:_messenger];
-    [player setMixWithOthers:false];
+    
     [eventChannel setStreamHandler:player];
     player.eventChannel = eventChannel;
     _players[@(textureId)] = player;
@@ -439,7 +439,7 @@ bool _remoteCommandsInitialized = false;
                     [player dispose];
                 }
             });
-            if ([_players count] == 0) {
+            if ([_players count] == 0 && _remoteCommandsInitialized) {
                 [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
             }
             result(nil);
