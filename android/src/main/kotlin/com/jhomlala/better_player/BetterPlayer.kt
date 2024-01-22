@@ -221,7 +221,7 @@ internal class BetterPlayer(
         } else {
             exoPlayer?.setMediaSource(mediaSource)
         }
-        exoPlayer?.setAudioAttributes(AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_SPEECH).build(), true)
+
         exoPlayer?.prepare()
 
         result.success(null)
@@ -494,7 +494,6 @@ internal class BetterPlayer(
             })
         surface = Surface(textureEntry.surfaceTexture())
         exoPlayer?.setVideoSurface(surface)
-        setAudioAttributes(exoPlayer, true)
         exoPlayer?.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
