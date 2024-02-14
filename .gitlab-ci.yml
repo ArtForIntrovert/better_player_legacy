@@ -1,0 +1,67 @@
+before_script:
+  - echo $CI_PROJECT_PATH
+  - fvm install && fvm flutter pub get
+  - (cd example ; fvm install && fvm flutter pub get)
+
+
+after_script:
+  - git status
+  - rm -rf .fvm/flutter_sdk
+  - rm -rf example/.fvm/flutter_sdk
+
+health_check:
+  stage: health
+  variables:
+    CI_TIMEOUT: 120
+  tags:
+    - werf-m1
+  script:
+    - ./scripts/analyze_for_errors.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|develop)$/
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+
+test:
+  stage: test
+  variables:
+    CI_TIMEOUT: 120
+  needs:
+    - health_check
+  tags:
+    - werf-m1
+  artifacts:
+    when: always
+    expire_in: "1 days"
+    reports:
+      junit:
+        - junit-report.xml
+  before_script:
+    - export PATH="$PATH:.fvm/flutter_sdk/bin"
+    - fvm flutter pub global activate junitreport
+  script:
+    - fvm flutter test --file-reporter json:tojunit.json
+    - cat tojunit.json | $HOME/.pub-cache/bin/tojunit --output junit-report.xml
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|develop)$/
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+
+.release:
+  stage: release
+  cache: {}
+  tags:
+    - werf-m1
+  variables:
+    CI: 1
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main)$/
+      when: always
+  before_script:
+    - git tag -d $(git tag -l)
+    - git fetch --tags --force
+    - npm install -g semantic-release @semantic-release/gitlab @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits
+  script:
+    - semantic-release
